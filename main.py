@@ -1,5 +1,12 @@
 import pandas as pd
-import os
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt      
+import math
+import seaborn as sns
+from collections import Counter
+from sklearn.decomposition import PCA
+
 
 sampled_coutrys = ["Israel","United States","United Kindom"]
 date = []
@@ -22,3 +29,5 @@ for index,row in complete_dataset.iterrows():
 		location.append(row['location'])
 		population.append(row['population'])
 updated_dataframe = pd.DataFrame({"location": location,"date":date,"new cases":new_cases,"total cases":total_cases,"new vaccined":new_vaccined,"total vaccined":total_vaccined,"population":population})
+updated_dataframe = updated_dataframe.fillna(0)
+print(updated_dataframe)
