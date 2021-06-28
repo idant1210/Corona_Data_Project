@@ -17,17 +17,18 @@ total_vaccined = []
 population = []
 location = []
 sick_of_pop = []
-def one_dim_plot(sr, plot_type, axis):
-    sr.plot (kind =plot_type ,ax=axis)
+
+#colors = ["#FF0000","#33FF00","#3300FF","#A200FF","#F7FF00","#00FFFF","#FF009A","#00E3FC","#6500FC","#F0658B"]
+def one_dim_plot(sr, plot_type, axis, color):
+    sr.plot (kind =plot_type ,ax=axis, color = color)
 
 
 def plot_frequent_elements(df, df_in_params):
     i=0
-    fig, axes= plt.subplots(1, 3, figsize=(20,5)) 
+    fig, axes= plt.subplots(1, 3, figsize=(20,5))
     for indexs in df_in_params.index :
-        
         sr = get_frequent_elements(df , df_in_params["col_name"][indexs], df_in_params["num_top_elements"][indexs])
-        one_dim_plot(sr , df_in_params ["plot_type"][indexs] , axes[i])
+        one_dim_plot(sr , df_in_params ["plot_type"][indexs] , axes[i] , color[i])
         i = i+1
 
 complete_dataset = pd.read_csv("owid-covid-data.csv")
@@ -60,3 +61,25 @@ for location in pre_vaccaine.copy().drop_duplicates(['location'])['location']:
 top_10 = final_pre.nlargest(8, ['precent of population'])
 pre = pre_vaccaine.loc[pre_vaccaine['location'].isin(top_10['location'])]
 vaccained = vaccained.loc[vaccained['location'].isin(top_10['location'])]
+colors = ["#e74c3c", "#2ecc71", "#3498db" , "#e04c0c", "#02c701", "#30480b" , "#e00c3c", "#2ec001", "#3008db" , "#004c3c", "#2ecc00", "#34900db"]
+fig = plt.figure(figsize=(20,5))
+i=0
+ax = fig.add_subplot(111)
+plt.ylabel('Sick our of population by %')
+plt.xticks(rotation = 45, ha = 'right')
+for location in (pre.drop_duplicates(['location']))['location']:
+	plt.plot(pre['date'].where(pre['location'] == location) ,pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
+	i = i+1
+plt.legend()
+plt.show()
+
+fig = plt.figure(figsize=(20,5))
+i=0
+ax = fig.add_subplot(111)
+plt.ylabel('Sick our of population by %')
+plt.xticks(rotation = 45, ha = 'right')
+for location in (pre.drop_duplicates(['location']))['location']:
+	plt.plot(pre['date'].where(pre['location'] == location) ,pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
+	i = i+1
+plt.legend()
+plt.show()
