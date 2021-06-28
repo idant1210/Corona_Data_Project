@@ -1,3 +1,4 @@
+  
 import pandas as pd
 import numpy as np
 import matplotlib as mpl
@@ -16,15 +17,18 @@ total_vaccined = []
 population = []
 location = []
 sick_of_pop = []
-
 def one_dim_plot(sr, plot_type, axis):
     sr.plot (kind =plot_type ,ax=axis)
 
-def get_frequent_elements(df, col_name,num_top_elements):
-    df_frequent= df.copy()
-    df_frequent = df_frequent.drop_duplicates(['location'],keep = 'last')
-    df_frequent= df_frequent[col_name].value_counts()[:num_top_elements].index.tolist()
-    return df_frequent
+
+def plot_frequent_elements(df, df_in_params):
+    i=0
+    fig, axes= plt.subplots(1, 3, figsize=(20,5)) 
+    for indexs in df_in_params.index :
+        
+        sr = get_frequent_elements(df , df_in_params["col_name"][indexs], df_in_params["num_top_elements"][indexs])
+        one_dim_plot(sr , df_in_params ["plot_type"][indexs] , axes[i])
+        i = i+1
 
 complete_dataset = pd.read_csv("owid-covid-data.csv")
 complete_dataset.dropna()
@@ -53,22 +57,6 @@ final_pre = pre_vaccaine.copy()[0:0]
 for location in pre_vaccaine.copy().drop_duplicates(['location'])['location']:
 	temp = pre_vaccaine.where(pre_vaccaine['location']==location).dropna().nlargest(1, ['precent of population'])
 	final_pre.loc[temp.index[0]] = temp.iloc[0]
-top_10 = final_pre.nlargest(10, ['precent of population'])
-pre_vaccaine = pre_vaccaine.where( pre_vaccaine['location'] in top_10['location'])
-print(pre_vaccaine)
-'''
-fig = plt.figure(figsize=(400,600))
-for location in (pre_vaccaine.drop_duplicates(['location']))['location']:
-	ax = fig.add_subplot(111)
-	plt.plot(pre_vaccaine['date'],pre_vaccaine['total cases'],linewidth=1.0)
-	plt.ylabel('Number of cases')
-	plt.xticks(rotation = 45, ha = 'right')
-
-plt.show()
-
-fig = plt.figure(figsize=(50, 20))
-ax = fig.add_subplot(111)
-plt.plot(pre_vaccaine['date'],pre_vaccaine['total cases'],linewidth=1.0, color='r')
-plt.ylabel('Number of cases')
-plt.xticks(rotation = 45, ha = 'right')
-plt.show()'''
+top_10 = final_pre.nlargest(8, ['precent of population'])
+pre = pre_vaccaine.loc[pre_vaccaine['location'].isin(top_10['location'])]
+vaccained = vaccained.loc[vaccained['location'].isin(top_10['location'])]
