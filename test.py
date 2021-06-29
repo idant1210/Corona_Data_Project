@@ -8,6 +8,7 @@ import seaborn as sns
 from collections import Counter
 from sklearn.decomposition import PCA
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 date = []
 new_cases = []
@@ -17,19 +18,6 @@ total_vaccined = []
 population = []
 location = []
 sick_of_pop = []
-
-#colors = ["#FF0000","#33FF00","#3300FF","#A200FF","#F7FF00","#00FFFF","#FF009A","#00E3FC","#6500FC","#F0658B"]
-def one_dim_plot(sr, plot_type, axis, color):
-    sr.plot (kind =plot_type ,ax=axis, color = color)
-
-
-def plot_frequent_elements(df, df_in_params):
-    i=0
-    fig, axes= plt.subplots(1, 3, figsize=(20,5))
-    for indexs in df_in_params.index :
-        sr = get_frequent_elements(df , df_in_params["col_name"][indexs], df_in_params["num_top_elements"][indexs])
-        one_dim_plot(sr , df_in_params ["plot_type"][indexs] , axes[i] , color[i])
-        i = i+1
 
 complete_dataset = pd.read_csv("owid-covid-data.csv")
 complete_dataset.dropna()
@@ -46,40 +34,53 @@ for index,row in complete_dataset.iterrows():
 	except ValueError:
 		precent= 0.0
 	sick_of_pop.append(precent)
+#######
+#Dataset handeling and spliting to pre vaccaine and after vaccaine
+#######
+#pre_vaccaine = pd.DataFrame(pre_vaccaine.loc[pre_vaccaine['new vaccined'] < 1])
 updated_df = pd.DataFrame({"location": location,"date":date,"new cases":new_cases,"total cases":total_cases,"new vaccined":new_vaccined,"total vaccined":total_vaccined,"population":population,"precent of population":sick_of_pop})
 updated_df = updated_df.fillna(0.0)
 updated_df['date'] = pd.to_datetime(updated_df['date'])
 updated_df = updated_df[~(updated_df['date'] < '2021-01-01')]
 pre_vaccaine = pd.DataFrame(updated_df.loc[updated_df['total vaccined'] < 1])
-pre_vaccaine = pd.DataFrame(pre_vaccaine.loc[pre_vaccaine['new vaccined'] < 1])
-vaccained = pd.DataFrame(updated_df.loc[updated_df['total vaccined'] > 0])
 pre_vaccaine = pre_vaccaine.reset_index(drop=True)
 final_pre = pre_vaccaine.copy()[0:0]
+final_vaccained = pre_vaccaine.copy()[0:0]
 for location in pre_vaccaine.copy().drop_duplicates(['location'])['location']:
 	temp = pre_vaccaine.where(pre_vaccaine['location']==location).dropna().nlargest(1, ['precent of population'])
 	final_pre.loc[temp.index[0]] = temp.iloc[0]
-top_10 = final_pre.nlargest(8, ['precent of population'])
-pre = pre_vaccaine.loc[pre_vaccaine['location'].isin(top_10['location'])]
-vaccained = vaccained.loc[vaccained['location'].isin(top_10['location'])]
-colors = ["#e74c3c", "#2ecc71", "#3498db" , "#e04c0c", "#02c701", "#30480b" , "#e00c3c", "#2ec001", "#3008db" , "#004c3c", "#2ecc00", "#34900db"]
-fig = plt.figure(figsize=(20,5))
-i=0
-ax = fig.add_subplot(111)
-plt.ylabel('Sick our of population by %')
-plt.xticks(rotation = 45, ha = 'right')
-for location in (pre.drop_duplicates(['location']))['location']:
-	plt.plot(pre['date'].where(pre['location'] == location) ,pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
-	i = i+1
-plt.legend()
-plt.show()
+top_10_pre = final_pre.nlargest(8, ['precent of population'])
+pre = pre_vaccaine.loc[pre_vaccaine['location'].isin(top_10_pre['location'])]
+vaccained = pd.DataFrame(updated_df.loc[updated_df['total vaccined'] > 0])
+vaccained = vaccained.loc[vaccained['location'].isin(top_10_pre['location'])]
 
-fig = plt.figure(figsize=(20,5))
-i=0
-ax = fig.add_subplot(111)
-plt.ylabel('Sick our of population by %')
+fig, axs = plt.subplots(2)
+fig.suptitle('Corona Virus vaccine effects in top 10 countrys')
+plt.ylabel('Infected of population by %')
 plt.xticks(rotation = 45, ha = 'right')
+i = 0
+axs[0].set_title("Pre Vaccaine")
+axs[1].set_title("Vaccaine")
 for location in (pre.drop_duplicates(['location']))['location']:
-	plt.plot(pre['date'].where(pre['location'] == location) ,pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
+	axs[0].plot(pre['date'].where(pre['location'] == location) ,pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
 	i = i+1
-plt.legend()
+
+i = 0
+for location in (vaccained.drop_duplicates(['location']))['location']:
+	axs[1].plot(vaccained['date'].where(vaccained['location'] == location) ,vaccained['precent of population'].where(vaccained['location'] == location),linewidth=2.0,label = location , linestyle = "-.")
+	i = i+1
+axs[0].legend()
+axs[1].legend()
+
+figure,ax = plt.subplots(8)
+figure.suptitle('Corona Virus vaccine effects in top 10 countrys')
+plt.ylabel('Infected of population by %')
+plt.xticks(rotation = 45, ha = 'right')
+i=0
+for location in (vaccained.drop_duplicates(['location']))['location']:
+	ax[i].set_title(location)
+	ax[i].plot(pre['date'].where(pre['location'] == location), pre['precent of population'].where(pre['location'] == location),linewidth=2.0,label = "Pre Veccaine" , linestyle = "-.")
+	ax[i].plot(vaccained['date'].where(vaccained['location'] == location), vaccained['precent of population'].where(vaccained['location'] == location),linewidth=2.0,label = "Veccained" , linestyle = "-.")
+	ax[i].legend()
+	i=i+1
 plt.show()
