@@ -74,21 +74,4 @@ for location in day_count.drop_duplicates('location')['location']:
 ######
 #Mechine learning
 ######
-for location in day_count['location'].drop_duplicates():
-	i = i+1
-	for index, row in (day_count.where(day_count['location']==location).dropna()).iterrows():
-		day_count.at[index,['location']] = i
-day_count['location'] = day_count['location'].astype('int')
 
-bins = (2,6.5,8)
-day_count['precent of population'] = pd.cut(day_count['precent of population'],bins)
-X = day_count.where(day_count['location']==19).dropna().drop("precent of population",axis = 1)
-y = day_count.where(day_count['location']==19).dropna()['precent of population']
-X_train,X_test,y_train,y_test = train_test_split(X,y,test_size = 0.2,random_state = 42)
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
-lgr = LogisticRegression()
-lgr.fit(X_train,y_train)
-predict_lgr = lgr.predict(X_test)
-print(predict_lgr)
